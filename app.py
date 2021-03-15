@@ -82,15 +82,6 @@ def stations():
     stations = session.query(Station.station, Station.name, Station.elevation, Station.latitude, Station.longitude).all()
 
 
-    # Create a dictionary from the row data and append to a list of all_passengers
-    # all_passengers = []
-    # for name, age, sex in results:
-    #     passenger_dict = {}
-    #     passenger_dict["name"] = name
-    #     passenger_dict["age"] = age
-    #     passenger_dict["sex"] = sex
-    #     all_passengers.append(passenger_dict)
-
     return jsonify(stations)
 
     session.close()
@@ -105,18 +96,33 @@ def tobs():
     year_ago = dt.date(2017, 8, 23) - dt.timedelta(days=366)
     year_temps = session.query(Measurement.date, Measurement.tobs).filter((Measurement.station)=="USC00519281").filter(func.strftime('%Y-%m-%d',Measurement.date) > year_ago).group_by(Measurement.date).all()
 
-    # Create a dictionary from the row data and append to a list of all_passengers
-    # all_passengers = []
-    # for name, age, sex in results:
-    #     passenger_dict = {}
-    #     passenger_dict["name"] = name
-    #     passenger_dict["age"] = age
-    #     passenger_dict["sex"] = sex
-    #     all_passengers.append(passenger_dict)
 
     return jsonify(year_temps)
 
     session.close()
 
-if __name__ == '__main__':
-    app.run(debug=True)
+
+@app.route("/api/v1.0/<start><br>")
+def start():
+    session = Session(engine)
+    start_date = ''
+    temps = session.query(func.min(Measurement.tobs), func.max(Measurement.tobs), func.avg(Measurement.tobs)).filter((Measurement.date)>=start_date.all())
+    
+    return(temps)
+
+    session.close()
+
+@app.route("/api/v1.0/<start>/<end><br>")
+def start_end():
+    session = Session(engine)
+    start_date = ''
+    end_date = ''
+    temps = session.query(func.min(Measurement.tobs), func.max(Measurement.tobs), func.avg(Measurement.tobs)).filter((Measurement.date>=start_date).filter(Measurement.date<= end_date).all())
+
+    return jsonify(temps)
+
+    session.close()
+    
+   
+    if __name__ == '__main__':
+        app.run(debug=True)
